@@ -79,7 +79,7 @@ class SizeInfo:
 
 class Canvas(SizeInfo):
     def __init__(self, iterable, width):
-        self.data = tuple(iterable)
+        self.data = list(iterable)
         get_size = _iterable_split(self.data, width)
         super().__init__((len(get_size[0]), len(get_size)))
 
@@ -97,18 +97,23 @@ class Canvas(SizeInfo):
         return [i for i in self.data if i is not None]
 
     def putdata(self, iterable):
-        org_type = self.data.__class__
-        data = list(self.data)
         iterable = iter(iterable)
-        for x, i in enumerate(data):
+        for x, i in enumerate(self.data):
             if i is not None:
                 try:
                     i = next(iterable)
                 except StopIteration:
                     return
                 else:
-                    data[x] = i
-        self.data = org_type(data)
+                    self.putpixel(i, x)
+
+    def putpixel(self, pixel, position):
+        if not isinstance(position, int):
+            position = _twod_to_oned(self.size, [position])[0]
+
+        if pixel is None or self.data[position] is None:
+            return
+        self.data[position] = pixel
 
     @classmethod
     def from_pillow(cls, im: Image.Image):
@@ -141,7 +146,6 @@ class Canvas(SizeInfo):
 class ExcludableCanvas(Canvas):
     def __init__(self, iterable, width):
         super().__init__(iterable, width)
-        self.data = list(self.data)
         self.org_data = tuple(self.data)
 
     def are_excluded(self, positions):
@@ -243,7 +247,39 @@ class ExcludableShortcuts(_CanvasBase):
         self.c.invert()
 
 
+class CanvasController(_CanvasBase):
+    """Allows the creation of canvases within a canvas
+    Which can allow tessellation or fractal patterns
+    """
+    def __init__(self, canvas: ExcludableCanvas):
+        super().__init__(canvas)
+        self.canvases = []
 
+    def portion(self, bbox):
+        gridded_data = quadrilateral.portion(as_grid(self.c.data, self.c.width), *bbox)
+        canvas = ExcludableCanvas(_iterable_remove_nested(gridded_data), bbox[1][0] - bbox[0][0])
+        self.canvases.append((canvas, bbox[0]))
+        return canvas
+
+    def insert(self, canvas, corner):
+        margin = corner[0] - 1
+        position = [margin, corner[1] - 1]
+        for width in as_grid(canvas.data, canvas.width):
+            position[1] += 1
+            for j in width:
+                position[0] += 1
+                self.c.putpixel(j, position)
+
+            position[0] = margin
+
+    def unscope(self, idx):
+        self.insert(*self.canvases.pop(idx))
+
+    def unscope_all(self):
+        [self.unscope(0) for _ in range(len(self.canvases))]
+
+    def get_canvases(self):
+        yield from self.canvases
 
 
 
@@ -267,6 +303,15 @@ if __name__ == '__main__':
     canvas.difference(shapes.circle)
     canvas.rearrange(sorters.yiq)
     canvas.remove_excluded()
+
+    control = CanvasController(c)
+    here = control.portion(((0, 0), (control.c.width//2, control.c.length//2)))
+
+    h = ExcludableShortcuts(here)
+    h.difference(shapes.circle)
+    h.rearrange(sorters.yiq)
+    h.remove_excluded()
+    control.unscope_all()
 
     image_res(list(canvas.c.data), canvas.c.size)
 

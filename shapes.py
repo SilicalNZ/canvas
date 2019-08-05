@@ -49,7 +49,6 @@ def circle(grid):
         the = find(x, y, r)
         if the:
             results.append(grid[y - 1][x - 1])
-    print(results)
     return results
 
 

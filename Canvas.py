@@ -1,63 +1,11 @@
-from copy import copy
-
+from collections import abc
+import itertools
+import functools
 from PIL import Image
-
-from shapes import quadrilateral
-
-n_set = set
-
-# Requires an iterable
-def _iterable_split(iterable, width: int):
-    """Yield successive n-sized chunks from l."""
-    iterable = list(iterable)
-    link = []
-    for i in range(0, len(iterable), width):
-        link.append(tuple(iterable[i:i + width]))
-    return tuple(link)
+from typing import Type
 
 
-def _iterable_overwrite(iterable_old, iterable_new):
-    old_length, new_length = len(iterable_old), len(iterable_new)
-
-    if new_length == old_length:
-        return tuple(iterable_new)
-    elif new_length > old_length:
-        return tuple(list(iterable_new)[:old_length])
-    elif old_length > new_length:
-        return tuple(list(iterable_new) + (list(iterable_old)[new_length:]))
-
-
-def _iterable_remove_nested(iterable, iterations: int=1):
-    if isinstance(iterable[0], int) or isinstance(iterable[0], str):
-        return iterable
-    for _ in range(iterations):
-        iterable = sum(iterable, iterable[0].__class__())
-    return iterable
-
-
-as_grid = _iterable_split
-
-
-def _oned_to_twod(size, positions):
-    x_axis, y_axis = size
-    return [(int(i % x_axis), i // y_axis) for i in positions]
-
-
-def _twod_to_oned(size, coordinates):
-    x_axis = size[0]
-    return tuple(x + y * x_axis for x, y in coordinates)
-
-
-def _find_bbox(coordinates):
-    coordinates = tuple(coordinates)
-
-    y_axis = lambda y: y[1]
-    x_axis = lambda x: x[0]
-
-    pos0 = min(coordinates, key=x_axis)[0], min(coordinates, key=y_axis)[1]
-    pos1 = max(coordinates, key=x_axis)[0] + 1, max(coordinates, key=y_axis)[1] + 1
-
-    return pos0, pos1
+import common, sili_math
 
 
 class SizeInfo:
@@ -77,102 +25,160 @@ class SizeInfo:
         return self.size[1]
 
 
-class Canvas(SizeInfo):
-    def __init__(self, iterable, width):
-        self.data = list(iterable)
-        get_size = _iterable_split(self.data, width)
-        super().__init__((len(get_size[0]), len(get_size)))
+class IndexableTuple(abc.Sequence):
+    def __init__(self, data):
+        self.data = list(data)
 
-    def get_positions(self):
-        return range(len(self.data))
+    def __len__(self):
+        return len(self.data)
 
-    def getxy(self):
-        res = []
-        for y, i in enumerate(_iterable_split(self.data, self.width)):
-            for x, j in enumerate(i):
-                res.append((x, y))
-        return res
+    def __iter__(self):
+        yield from iter(self.data)
 
-    def getdata(self):
-        return [i for i in self.data if i is not None]
+    def __contains__(self, item):
+        return item in self.data
 
-    def putdata(self, iterable):
-        iterable = iter(iterable)
-        for x, i in enumerate(self.data):
-            if i is not None:
+    def __reversed__(self):
+        return self.__class__(reversed(self.data))
+
+    def __getitem__(self, item):
+        return self.data[item]
+
+    def __setitem__(self, key, value):
+        self.data[key] = value
+
+    def __repr__(self):
+        return repr(tuple(self.data))
+
+
+class NoneIsImportantTuple(IndexableTuple):
+    def putdata(self, iterable, option: int=0):
+        """
+        :param iterable: an iterable of unimportant length
+        :param option:
+            0 = Will jump past None indexes
+            1 = Will not jump past None
+        :return:
+        """
+        import time
+        if option == 0:
+            iterable = iter(iterable)
+            for x, i in enumerate(self.data):
+                if i is None:
+                    continue
                 try:
                     i = next(iterable)
                 except StopIteration:
                     return
                 else:
-                    self.putpixel(i, x)
+                    self[x] = i
+        elif option == 1:
+            for x, i in enumerate(iterable):
+                if i is None:
+                    continue
+                try:
+                    self[x] = i
+                except IndexError:
+                    continue
 
-    def putpixel(self, pixel, position):
-        if not isinstance(position, int):
-            position = _twod_to_oned(self.size, [position])[0]
+    def get_positions(self):
+        yield from range(len(self.data))
 
-        if pixel is None or self.data[position] is None:
-            return
-        self.data[position] = pixel
+    def is_excluded(self, key):
+        return bool(self[key])
 
-    @classmethod
-    def from_pillow(cls, im: Image.Image):
-        return cls(im.getdata(), im.width)
-
-    @classmethod
-    def from_canvas(cls, canvas):
-        return cls(canvas, canvas.width)
-
-    def __copy__(self):
-        return self.__class__(self.data, self.width)
+    def getdata(self):
+        return [i for i in self.data if i is not None]
 
     @property
     def excluded(self):
         """Returns the index of excluded cells"""
-        return [x for x, i in enumerate(self.data) if i is None]
+        return [x for x, i in enumerate(self) if i is None]
 
     @property
     def unexcluded(self):
         """Returns the index of not excluded cells"""
-        return [x for x, i in enumerate(self.data) if i is not None]
-
-    def range(self):
-        return range(len(self.data))
+        return [x for x, i in enumerate(self) if i is not None]
 
     def rearrange(self, func):
         self.putdata(func(self.getdata()))
 
 
-class ExcludableCanvas(Canvas):
-    def __init__(self, iterable, width):
-        super().__init__(iterable, width)
-        self.org_data = tuple(self.data)
+class NoneIsImmutableTuple(NoneIsImportantTuple):
+    def __setitem__(self, key, value):
+        if self.data[key] is not None:
+            self.data[key] = value
 
-    def are_excluded(self, positions):
-        return set(self.excluded).intersection(positions)
 
-    def are_unexcluded(self, positions):
-        return set(self.unexcluded).intersection(positions)
+class Canvas(NoneIsImportantTuple, SizeInfo):
+    def __init__(self, data, size):
+        NoneIsImportantTuple.__init__(self, data)
+        SizeInfo.__init__(self, size)
 
-    def exclude(self, positions):
-        for position in self.are_unexcluded(positions):
-            self.data[position] = None
+    def __setitem__(self, key, value):
+        try:
+            key = common.twod_to_oned(self.size, key)
+        except TypeError:
+            pass
+        super().__setitem__(key, value)
 
-    def unexclude(self, positions):
-        for position in self.are_excluded(positions):
-            self.data[position] = self.org_data[position]
+    @classmethod
+    def from_pillow(cls, im: Image.Image):
+        return cls(im.getdata(), im.size)
 
-    def remove_excluded(self):
-        self.unexclude(self.range())
+    @classmethod
+    def from_canvas(cls, canvas):
+        return cls(canvas.data, canvas.size)
 
-    def remove_unexcluded(self):
-        self.exclude(self.range())
+    def as_grid(self):
+        return tuple(common.split_every(self.data, self.width))
+
+
+class ClosedCanvas(Canvas, NoneIsImmutableTuple):
+    def __setitem__(self, key, value):
+        try:
+            key = common.twod_to_oned(self.size, key)
+        except TypeError:
+            pass
+        super().__setitem__(key, value)
+
+
+class CanvasLayer(Canvas):
+    def __init__(self, canvas: Canvas or Type[Canvas]):
+        self.c = canvas
+        super().__init__(self.c.data, self.c.size)
+
+    def __setitem__(self, key, value):
+        try:
+            key = common.twod_to_oned(self.size, key)
+        except TypeError:
+            pass
+        if not self.c.is_excluded(key):
+            return
+        super().__setitem__(key, value)
 
     def save(self):
-        """Overwrites self.org_data with self.data
+        """Overwrites self._c.data with self.data
         """
-        self.remove_excluded()
-        self.org_data = tuple(self.data)
+        self.c.data = self.data
+
+
+class CanvasAbstraction(CanvasLayer):
+    def exclude(self, positions):
+        for position in positions:
+            if self.is_excluded(position):
+                self.data[position] = None
+
+    def unexclude(self, positions):
+        for position in positions:
+            if not self.is_excluded(position):
+                self.data[position] = self.c.data[position]
+
+    def remove_excluded(self):
+        self.unexclude(range(len(self.data)))
+
+    def remove_unexcluded(self):
+        self.exclude(range(len(self.data)))
 
     def difference(self, positions):
         """This allows the difference of different shapes and algorithms
@@ -198,23 +204,15 @@ class ExcludableCanvas(Canvas):
 
     def invert(self):
         unexcluded = self.unexcluded
-        self.save()
+        self.remove_excluded()
         self.exclude(unexcluded)
 
 
-class _CanvasBase:
-    def __init__(self, canvas: ExcludableCanvas):
-        if hasattr(canvas, 'c'):
-            self.c = c
-        else:
-            self.c = canvas
-
-
-class ExcludableShortcuts(_CanvasBase):
+class SimpleCanvasAbstraction(CanvasAbstraction):
     # _iterable_remove_nested just makes function writing a bit more versatile
 
     def _apply_to(self, function, attribute):
-        getattr(self.c, attribute)(_iterable_remove_nested(tuple(function(as_grid(self.c.get_positions(), self.c.width)))))
+        getattr(super(), attribute)(common.flatten(tuple(function(tuple(common.split_every(self.c.get_positions(), self.c.width))))))
 
     def difference(self, function):
         """This allows the difference of different shapes and algorithms
@@ -234,41 +232,29 @@ class ExcludableShortcuts(_CanvasBase):
         """
         self._apply_to(function, 'intersection')
 
-    def rearrange(self, function):
-        self.c.rearrange(function)
 
-    def remove_excluded(self):
-        self.c.remove_excluded()
-
-    def remove_unexcluded(self):
-        self.c.remove_unexcluded()
-
-    def invert(self):
-        self.c.invert()
-
-
-class CanvasController(_CanvasBase):
+class CanvasController(CanvasLayer):
     """Allows the creation of canvases within a canvas
     Which can allow tessellation or fractal patterns
     """
-    def __init__(self, canvas: ExcludableCanvas):
+    def __init__(self, canvas):
         super().__init__(canvas)
         self.canvases = []
 
     def portion(self, bbox):
-        gridded_data = quadrilateral.portion(as_grid(self.c.data, self.c.width), *bbox)
-        canvas = ExcludableCanvas(_iterable_remove_nested(gridded_data), bbox[1][0] - bbox[0][0])
+        gridded_data = shapes.quadrilateral.portion(self.c.as_grid(), *bbox)
+        canvas = Canvas(common.flatten(gridded_data), (bbox[1][0] - bbox[0][0], bbox[1][1] - bbox[0][1]))
         self.canvases.append((canvas, bbox[0]))
         return canvas
 
     def insert(self, canvas, corner):
         margin = corner[0] - 1
         position = [margin, corner[1] - 1]
-        for width in as_grid(canvas.data, canvas.width):
+        for width in canvas.as_grid():
             position[1] += 1
             for j in width:
                 position[0] += 1
-                self.c.putpixel(j, position)
+                self.c[position] = j
 
             position[0] = margin
 
@@ -280,8 +266,6 @@ class CanvasController(_CanvasBase):
 
     def get_canvases(self):
         yield from self.canvases
-
-
 
 
 if __name__ == '__main__':
@@ -298,25 +282,22 @@ if __name__ == '__main__':
 
 
     im = Image.open('test_images//input//sili.png')
-    c = ExcludableCanvas.from_pillow(im)
-    canvas = ExcludableShortcuts(c)
-    canvas.difference(shapes.circle)
+    c = Canvas.from_pillow(im)
+    canvas = SimpleCanvasAbstraction(c)
+    canvas.intersection(shapes.circle)
     canvas.rearrange(sorters.yiq)
     canvas.remove_excluded()
+    canvas.save()
 
     control = CanvasController(c)
     here = control.portion(((0, 0), (control.c.width//2, control.c.length//2)))
 
-    h = ExcludableShortcuts(here)
-    h.difference(shapes.circle)
+    h = SimpleCanvasAbstraction(here)
+    h.difference(shapes.triangle)
     h.rearrange(sorters.yiq)
     h.remove_excluded()
+    h.save()
     control.unscope_all()
 
-    image_res(list(canvas.c.data), canvas.c.size)
-
-
-
-
-
+    image_res(canvas, im.size)
 

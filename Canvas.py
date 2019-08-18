@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import abc
 import itertools
 import functools
@@ -117,9 +119,13 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
 
     def __setitem__(self, key, value):
         try:
-            key = common.twod_to_oned(self.size, key)
+            new_key = common.twod_to_oned(self.size, key)
         except TypeError:
             pass
+        else:
+            if key[0] < 0 or key[0] > self.width or key[1] < 0 or key[1] > self.length:
+                raise IndexError
+            key = new_key
         super().__setitem__(key, value)
 
     @classmethod
@@ -132,6 +138,13 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
 
     def as_grid(self):
         return tuple(common.split_every(self.data, self.width))
+
+    def insert(self, canvas: Canvas, corner):
+        for y, length in enumerate(canvas.as_grid(), corner[1]):
+            for x, width in enumerate(length, corner[0]):
+                try: self[(x, y)] = width
+                except IndexError:
+                    pass
 
 
 class ClosedCanvas(Canvas, NoneIsImmutableTuple):
@@ -247,19 +260,8 @@ class CanvasController(CanvasLayer):
         self.canvases.append((canvas, bbox[0]))
         return canvas
 
-    def insert(self, canvas, corner):
-        margin = corner[0] - 1
-        position = [margin, corner[1] - 1]
-        for width in canvas.as_grid():
-            position[1] += 1
-            for j in width:
-                position[0] += 1
-                self.c[position] = j
-
-            position[0] = margin
-
     def unscope(self, idx):
-        self.insert(*self.canvases.pop(idx))
+        self.c.insert(*self.canvases.pop(idx))
 
     def unscope_all(self):
         [self.unscope(0) for _ in range(len(self.canvases))]

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import abc
 import itertools
-import functools
+from functools import wraps
 from PIL import Image
 from typing import Type
 
@@ -112,12 +112,9 @@ class NoneIsImmutableTuple(NoneIsImportantTuple):
             self.data[key] = value
 
 
-class Canvas(NoneIsImportantTuple, SizeInfo):
-    def __init__(self, data, size):
-        NoneIsImportantTuple.__init__(self, data)
-        SizeInfo.__init__(self, size)
-
-    def __setitem__(self, key, value):
+def _coord_convertor(func):
+    @wraps(func)
+    def wrapper(self, key, *args, **kwargs):
         try:
             new_key = common.twod_to_oned(self.size, key)
         except TypeError:
@@ -126,7 +123,22 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
             if key[0] < 0 or key[0] > self.width or key[1] < 0 or key[1] > self.length:
                 raise IndexError
             key = new_key
+        return func(self, key, *args, **kwargs)
+    return wrapper
+
+
+class Canvas(NoneIsImportantTuple, SizeInfo):
+    def __init__(self, data, size):
+        NoneIsImportantTuple.__init__(self, data)
+        SizeInfo.__init__(self, size)
+
+    @_coord_convertor
+    def __setitem__(self, key, value):
         super().__setitem__(key, value)
+
+    @_coord_convertor
+    def __getitem__(self, key):
+        return super().__getitem__(key)
 
     @classmethod
     def from_pillow(cls, im: Image.Image):

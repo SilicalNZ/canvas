@@ -257,6 +257,11 @@ class SimpleCanvasAbstraction(CanvasAbstraction):
         """
         self._apply_to(function, 'intersection')
 
+    def shape_and_rearrange(self, shape_func, rearrange_func):
+        self.intersection(shape_func)
+        self.rearrange(rearrange_func)
+        self.remove_excluded()
+
 
 class CanvasController(CanvasLayer):
     """Allows the creation of canvases within a canvas

@@ -120,7 +120,7 @@ def _coord_convertor(func):
         except TypeError:
             pass
         else:
-            if key[0] < 0 or key[0] > self.width or key[1] < 0 or key[1] > self.length:
+            if key[0] < 0 or key[0] > self.width - 1 or key[1] < 0 or key[1] > self.length - 1:
                 raise IndexError
             key = new_key
         return func(self, key, *args, **kwargs)

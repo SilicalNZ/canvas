@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from collections import abc
 import itertools
 from functools import wraps
@@ -8,6 +9,7 @@ from typing import Type
 
 
 import common, sili_math
+import line_thingy
 
 
 class SizeInfo:
@@ -330,6 +332,23 @@ class CanvasController(CanvasLayer):
     def get_canvases(self):
         yield from self.canvases
 
+    def fragment(self, size, width_padding: int=0, length_padding: int=0):
+        x_cells = math.ceil(self.c.width // size[0] + width_padding) + 1
+        y_cells = math.ceil(self.c.length // size[1] + length_padding) + 1
+
+        x_positions = [*line_thingy.LineBalancer([size[1]] * (x_cells)).padded(width_padding)]
+        y_positions = line_thingy.LineBalancer([size[0]] * (y_cells)).padded(length_padding)
+
+        def get_opposite_corner(corner, size):
+            return corner[0] + size[0], corner[1] + size[1]
+
+        for j, y_pos in enumerate(y_positions):
+            for x_pos in x_positions:
+                bbox0 = x_pos, y_pos
+                bbox1 = get_opposite_corner(bbox0, size)
+                print(bbox0)
+                yield self.portion((bbox0, bbox1))
+
 
 if __name__ == '__main__':
     import shapes, sorters
@@ -344,23 +363,21 @@ if __name__ == '__main__':
         return res
 
 
-    im = Image.open('test_images//input//sili.png')
+    im = Image.open('test_images//input//0.png').convert('RGB')
     c = Canvas.from_pillow(im)
-    canvas = SimpleCanvasAbstraction(c)
-    canvas.intersection(shapes.circle)
-    canvas.rearrange(sorters.yiq)
-    canvas.remove_excluded()
-    canvas.save()
 
     control = CanvasController(c)
-    here = control.portion(((0, 0), (control.c.width//2, control.c.length//2)))
 
-    h = SimpleCanvasAbstraction(here)
-    h.difference(shapes.triangle)
-    h.rearrange(sorters.yiq)
-    h.remove_excluded()
-    h.save()
+    fragged = control.fragment((30, 30))
+    for i in fragged:
+        i = SimpleCanvasAbstraction(i)
+        i.shape_and_rearrange(shapes.triangle, sorters.yiq)
+        i.save()
     control.unscope_all()
 
-    image_res(canvas, im.size)
+
+
+
+
+    image_res(c, c.size)
 

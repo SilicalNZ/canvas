@@ -145,6 +145,10 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
         return cls(im.getdata(), im.size)
 
     @classmethod
+    def from_empty_size(cls, size):
+        return cls([0] * sili_math.prod(size), size)
+
+    @classmethod
     def from_canvas(cls, canvas):
         return cls(canvas.data, canvas.size)
 
@@ -154,6 +158,8 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
     def insert(self, canvas: Canvas, corner):
         for y, length in enumerate(canvas.as_grid(), corner[1]):
             for x, width in enumerate(length, corner[0]):
+                if width is None:
+                    pass
                 try: self[(x, y)] = width
                 except IndexError:
                     pass
@@ -271,7 +277,45 @@ class CanvasController(CanvasLayer):
         super().__init__(canvas)
         self.canvases = []
 
+    def bbox_is_outside_range(self, bbox):
+        pos0, pos1 = bbox
+        x0, y0 = pos0
+        x1, y1 = pos1
+
+        outside_range = False
+        if any(x < 0 or x > self.width for x in (x0, x1)) \
+                or any(y < 0 or y > self.length for y in (y0, y1)):
+            outside_range = True
+        return outside_range
+
+    def _outside_range(self, bbox):
+        if not self.bbox_is_outside_range:
+            return self.portion(bbox)
+
+        pos0, pos1 = bbox
+        x0, y0 = pos0
+        x1, y1 = pos1
+
+        size = x1 - x0 + 1, y1 - y0 + 1
+        canvas = Canvas.from_empty_size(size)
+        self.canvases.append((canvas, bbox[0]))
+
+        positions = []
+        for pos in sili_math.positions_within(bbox):
+            try:
+                i = self.c[pos]
+            except IndexError:
+                i = None
+
+            positions.append(i)
+        canvas.putdata(positions)
+
+        return canvas
+
     def portion(self, bbox):
+        if self.bbox_is_outside_range:
+            return self._outside_range(bbox)
+
         gridded_data = shapes.quadrilateral.portion(self.c.as_grid(), *bbox)
         canvas = Canvas(common.flatten(gridded_data), (bbox[1][0] - bbox[0][0], bbox[1][1] - bbox[0][1]))
         self.canvases.append((canvas, bbox[0]))

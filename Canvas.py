@@ -346,7 +346,6 @@ class CanvasController(CanvasLayer):
             for x_pos in x_positions:
                 bbox0 = x_pos, y_pos
                 bbox1 = get_opposite_corner(bbox0, size)
-                print(bbox0)
                 yield self.portion((bbox0, bbox1))
 
 
@@ -375,9 +374,4 @@ if __name__ == '__main__':
         i.save()
     control.unscope_all()
 
-
-
-
-
     image_res(c, c.size)
-

@@ -337,15 +337,19 @@ class CanvasController(CanvasLayer):
     def get_canvases(self):
         yield from self.canvases
 
-    def fragment(self, size, width_padding: int=0, length_padding: int=0):
-        x_positions = [*line_thingy.padded_maximum(self.width, width_padding, size[0])]
-        y_positions = line_thingy.padded_maximum(self.length, length_padding, size[1])
-
-        def get_opposite_corner(corner, size):
-            return corner[0] + size[0] - 1, corner[1] + size[1] - 1
-
+    def _portion_from_rangeable(self, size, x_positions, y_positions):
         for j, y_pos in enumerate(y_positions):
             for x_pos in x_positions:
                 bbox0 = x_pos, y_pos
-                bbox1 = get_opposite_corner(bbox0, size)
+                bbox1 = sili_math.get_opposite_corner(bbox0, size)
                 yield self.portion((bbox0, bbox1))
+
+    def fragment(self, size, width_padding: int=0, length_padding: int=0):
+        x_positions = [*line_thingy.padded_maximum(self.width, width_padding, size[0])]
+        y_positions = line_thingy.padded_maximum(self.length, length_padding, size[1])
+        yield from self._portion_from_rangeable(size, x_positions, y_positions)
+
+    def fragment_fill_in(self, size, sizes_per_width: int, sizes_per_length: int):
+        x_positions = [*line_thingy.fill_in_shortcut(self.width, size[0], sizes_per_width)]
+        y_positions = line_thingy.fill_in_shortcut(self.length, size[1], sizes_per_length)
+        yield from self._portion_from_rangeable(size, x_positions, y_positions)

@@ -65,7 +65,7 @@ def padded_maximum(distance: int, spacing: int, line: int):
 
 def fill_in_line(distance: int, segments):
     """
-    :param distance: length of gaps
+    :param distance: length of line to fill in
     :param segments: length of each line
 
     distance = 20
@@ -81,7 +81,7 @@ def fill_in_line(distance: int, segments):
     padding = divmod(spacing, len(segments) - 1)
 
     halfway = distance / 2
-    for i in padded(padding[0]):
+    for i in padded(padding[0], segments):
         if i >= halfway:
             i += padding[1]
         yield i

@@ -17,6 +17,7 @@ def align_right(segments):
             padding = 0
         yield padding
 
+
 def align_centre(segments):
     """
     :param segments: length of each line
@@ -90,9 +91,3 @@ def fill_in_line(distance: int, segments):
 def fill_in_shortcut(distance: int, line: int, amount: int):
     segments = [line] * amount
     return fill_in_line(distance, segments)
-
-
-
-if __name__ == '__main__':
-    this = LineBalancer((2, 2, 2, 2))
-    [print(i) for i in this.padded(3)]

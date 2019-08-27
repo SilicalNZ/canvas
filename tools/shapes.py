@@ -1,8 +1,7 @@
 from itertools import starmap
 import math
 
-import sili_math
-import common
+from common import common, sili_math
 
 
 def _middle_list(iterable, width: int):
@@ -19,7 +18,7 @@ def _middle_list(iterable, width: int):
 def triangle(grid):
     width, length = len(grid[0]), len(grid)
 
-    return list(starmap(_middle_list, zip(grid, map(int, common.drange(int(width / length), width, width / length)))))
+    return list(starmap(_middle_list, zip(grid, map(int, common.drange(math.ceil(width / length), width + 1, width / length)))))
 
 
 def vertical_lines(grid):

@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import math
 from collections import abc
-import itertools
+from itertools import chain
 from functools import wraps
 from PIL import Image
 from typing import Type
 
-
-import common, sili_math
-import line_thingy
+from common import common, sili_math, line_thingy
 
 
 class SizeInfo:
@@ -64,7 +62,6 @@ class NoneIsImportantTuple(IndexableTuple):
             1 = Will not jump past None
         :return:
         """
-        import time
         if option == 0:
             iterable = iter(iterable)
             for x, i in enumerate(self.data):
@@ -207,6 +204,9 @@ class CanvasAbstraction(CanvasLayer):
             if not self.is_excluded(position):
                 self.data[position] = self.c.data[position]
 
+    def save(self):
+        self.c.putdata(self, 1)
+
     def remove_excluded(self):
         self.unexclude(range(len(self.data)))
 
@@ -244,26 +244,27 @@ class CanvasAbstraction(CanvasLayer):
 class SimpleCanvasAbstraction(CanvasAbstraction):
     # _iterable_remove_nested just makes function writing a bit more versatile
 
-    def _apply_to(self, function, attribute):
-        getattr(super(), attribute)(common.flatten(tuple(function(tuple(common.split_every(self.c.get_positions(), self.c.width))))))
+    def _apply_to(self, functions, attribute):
+        grid = tuple(common.split_every(self.c.get_positions(), self.c.width))
+        getattr(super(), attribute)(common.flatten(common.flap(grid, functions)))
 
-    def difference(self, function):
+    def difference(self, *functions):
         """This allows the difference of different shapes and algorithms
         Ex: A circle & triangle, will have the area of where they don't overlap
         """
-        self._apply_to(function, 'difference')
+        self._apply_to(functions, 'difference')
 
-    def union(self, function):
+    def union(self, *functions):
         """This allows the mixing of different shapes and algorithms
         Ex: A circle & triangle, will have the area of both combined
         """
-        self._apply_to(function, 'union')
+        self._apply_to(functions, 'union')
 
-    def intersection(self, function):
+    def intersection(self, *functions):
         """This allows the mixing of different shapes and algorithms
         Ex: A circle & triangle, will have the area of where they overlap
         """
-        self._apply_to(function, 'intersection')
+        self._apply_to(functions, 'intersection')
 
     def shape_and_rearrange(self, shape_func, rearrange_func):
         self.intersection(shape_func)
@@ -333,14 +334,11 @@ class CanvasController(CanvasLayer):
         yield from self.canvases
 
     def fragment(self, size, width_padding: int=0, length_padding: int=0):
-        x_cells = math.ceil(self.c.width // size[0] + width_padding) + 1
-        y_cells = math.ceil(self.c.length // size[1] + length_padding) + 1
-
-        x_positions = [*line_thingy.LineBalancer([size[1]] * (x_cells)).padded(width_padding)]
-        y_positions = line_thingy.LineBalancer([size[0]] * (y_cells)).padded(length_padding)
+        x_positions = [*line_thingy.padded_maximum(self.width, width_padding, size[0])]
+        y_positions = line_thingy.padded_maximum(self.length, length_padding, size[1])
 
         def get_opposite_corner(corner, size):
-            return corner[0] + size[0], corner[1] + size[1]
+            return corner[0] + size[0] - 1, corner[1] + size[1] - 1
 
         for j, y_pos in enumerate(y_positions):
             for x_pos in x_positions:
@@ -348,30 +346,9 @@ class CanvasController(CanvasLayer):
                 bbox1 = get_opposite_corner(bbox0, size)
                 yield self.portion((bbox0, bbox1))
 
-
-if __name__ == '__main__':
-    import shapes, sorters
-
-
-    def image_res(data, size):
-        import time
-        name = time.time()
-        res = Image.new("RGB", size)
-        res.putdata(data)
-        res.save(f"test_images//output//{name}.png")
-        return res
-
-
-    im = Image.open('test_images//input//0.png').convert('RGB')
-    c = Canvas.from_pillow(im)
-
-    control = CanvasController(c)
-
-    fragged = control.fragment((30, 30))
-    for i in fragged:
-        i = SimpleCanvasAbstraction(i)
-        i.shape_and_rearrange(shapes.triangle, sorters.yiq)
-        i.save()
-    control.unscope_all()
-
-    image_res(c, c.size)
+    #def fragment_fill_in(self, size, sizes_per_width: int, sizes_per_length: int):
+    #    x_positions = [*line_thingy.fill_in(sizes_per_width, [size[0] + 1] * sizes_per_width)]
+    #    y_positions = line_thingy.fill_in(sizes_per_length, [size[0] + 1] * sizes_per_length)
+#
+    #    def get_opposite_corner(corner, size):
+    #        return corner[0] + size[0], corner[1] + size[1]

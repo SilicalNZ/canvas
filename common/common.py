@@ -35,3 +35,8 @@ def flatten(iterable, iterations: int=1):
     for _ in range(iterations):
         iterable = sum(iterable, iterable[0].__class__())
     return iterable
+
+def flap(arg, functions):
+    for function in functions:
+        arg = function(arg)
+    return arg

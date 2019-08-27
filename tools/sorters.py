@@ -4,8 +4,6 @@ from functools import wraps, partial
 import math
 import random
 
-import sili_math
-
 _round = round
 
 

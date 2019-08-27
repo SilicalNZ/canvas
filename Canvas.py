@@ -104,6 +104,10 @@ class NoneIsImportantTuple(IndexableTuple):
     def rearrange(self, func):
         self.putdata(func(self.getdata()))
 
+    @property
+    def is_redundant(self):
+        return len(self.excluded) == len(self)
+
 
 class NoneIsImmutableTuple(NoneIsImportantTuple):
     def __setitem__(self, key, value):

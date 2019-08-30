@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name = 'canvas',
-    version = '',
+    version = '0.1',
     description = '',
     license = 'MIT',
 

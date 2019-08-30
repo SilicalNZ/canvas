@@ -1,20 +1,12 @@
-from setuptools import setup
+import setuptools
 
-setup(
+setuptools.setup(
     name = 'canvas',
-    version = '0.1',
+    version = '0.0.1',
     description = '',
     license = 'MIT',
 
     author = 'SilicalNZ',
     author_email = 'SilicalNZ@gmail.com',
-    packages = ['canvas'],  #same as name
-    install_requires = ['Pillow'], #external packages as dependencies
-    common = ['common/common',
-              'common/line_thingy',
-              'common/sili_math'],
-    tools = ['tools/alterations',
-             'tools/shapes',
-             'tools/sorters',
-             'tools/transformers']
+    packages = setuptools.find_packages()
 )

@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(
-    name = 'canvas',
+    name = 'sili-canvas',
     version = '0.0.1',
     description = '',
     license = 'MIT',

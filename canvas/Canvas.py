@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections import abc
 from functools import wraps
-from PIL import Image
 from typing import Type
 
 from common import common, line_thingy
@@ -141,10 +140,6 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
     @_coord_convertor
     def __getitem__(self, key):
         return super().__getitem__(key)
-
-    @classmethod
-    def from_pillow(cls, im: Image.Image):
-        return cls(im.getdata(), im.size)
 
     @classmethod
     def from_empty_size(cls, size):

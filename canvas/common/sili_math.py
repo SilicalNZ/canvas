@@ -27,3 +27,6 @@ def positions_within(bbox):
     for y in range(y0, y1 + 1, 1):
         for x in range(x0, x1 + 1, 1):
             yield (x, y)
+
+def get_opposite_corner(corner, size):
+    return corner[0] + size[0] - 1, corner[1] + size[1] - 1

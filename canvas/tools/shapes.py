@@ -1,7 +1,8 @@
 from itertools import starmap
 import math
 
-from common import common, sili_math
+from common import common
+from canvas.common import sili_math
 
 
 def _middle_list(iterable, width: int):

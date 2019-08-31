@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import math
 from collections import abc
-from itertools import chain
 from functools import wraps
 from PIL import Image
 from typing import Type
 
-from common import common, sili_math, line_thingy
+from common import common, line_thingy
+from canvas.common import sili_math
 
 
 class SizeInfo:

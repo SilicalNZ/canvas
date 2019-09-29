@@ -4,8 +4,7 @@ from collections import abc
 from functools import wraps
 from typing import Type
 
-from common import common, line_thingy
-from canvas.common import sili_math
+from .common import *
 
 
 class SizeInfo:

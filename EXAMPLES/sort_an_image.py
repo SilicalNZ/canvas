@@ -12,6 +12,7 @@ def open_and_save_image(func):
 
         im.putdata(c.getdata())
         im.save('result_image.png')
+    return wrapper
 
 @open_and_save_image
 def rearrange(c: canvas.Canvas):

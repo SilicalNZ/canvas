@@ -25,7 +25,7 @@ def rearrange_segments(c: canvas.Canvas):
     controller = canvas.CanvasController(c)
     # A rectangle of width = default, length = 20
     width, length = c.width, c.length // 20
-    # Splits the canvas into those rectangles
+    # Splits the canvas into quadrilaterals
     # and returns a generator to iterate through
     for i in controller.fragment((width, length)):
         # Sort each rectangle by luminosity

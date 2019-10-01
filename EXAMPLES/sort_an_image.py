@@ -16,7 +16,8 @@ def open_and_save_image(func):
 
 @open_and_save_image
 def rearrange(c: canvas.Canvas):
-    c.rearrange(canvas.tools.yiq) # Sorts by luminosity
+    # Sorts by luminosity
+    c.rearrange(canvas.tools.yiq)
     return c
 
 @open_and_save_image

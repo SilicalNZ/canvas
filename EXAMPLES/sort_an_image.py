@@ -10,6 +10,7 @@ def open_and_save_image(func):
 
         c = func(c)
 
+        im = Image.new('RGB', c.size)
         im.putdata(c.getdata())
         im.save('result_image.png')
     return wrapper

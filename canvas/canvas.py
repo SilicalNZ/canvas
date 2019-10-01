@@ -40,6 +40,9 @@ class IndexableTuple(abc.Sequence):
     def __reversed__(self):
         return self.__class__(reversed(self.data))
 
+    def reverse(self):
+        self.data.reverse()
+
     def __getitem__(self, item):
         return self.data[item]
 

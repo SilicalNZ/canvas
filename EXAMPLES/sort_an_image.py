@@ -32,3 +32,17 @@ def rearrange_segments(c: canvas.Canvas):
     # Save all changes
     controller.unscope_all()
     return c
+
+@open_and_save_image
+def rearrange_shape(c: canvas.Canvas):
+    applier = canvas.CanvasApplier(c)
+    # Assigns the area of the circle
+    applier.intersection(canvas.tools.circle)
+    # Assings the area of the triangle
+    # that is within the circles area
+    applier.intersection(canvas.tools.triangle)
+    # Sort each rectangle by luminosity
+    applier.rearrange(canvas.tools.yiq)
+    # Save all changes
+    applier.save()
+    return c

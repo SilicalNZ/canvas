@@ -47,3 +47,38 @@ def rearrange_shape(c: canvas.Canvas):
     # Save all changes
     applier.save()
     return c
+
+@open_and_save_image
+def rearrange_tessellation(c: canvas.Canvas):
+    controller = canvas.CanvasController(c)
+    # How big the shapes should be
+    size = (40, 40)
+    # Splits the canvas into quadrilaterals
+    # and returns a generator to iterate through
+    for i in controller.fragment(size):
+        # Flips the canvas
+        i.reverse()
+        # Make a triangle and sort it
+        applier = canvas.CanvasApplier(i)
+        applier.intersection(canvas.tools.triangle)
+        applier.rearrange(canvas.tools.yiq)
+        applier.save()
+        # Unflips the canvas
+        i.reverse()
+    # Save current changes
+    controller.unscope_all()
+
+    # Create an unaligned canvas, so that the next iteration
+    # is halfway between the old iteration
+    portion = controller.portion(((-20, 0), controller.size))
+    new_controller = canvas.CanvasController(portion)
+
+    for i in new_controller.fragment(size):
+        # Make a triangle and sort it
+        applier = canvas.CanvasApplier(i)
+        applier.shape_and_rearrange(canvas.tools.triangle, canvas.tools.yiq)
+        applier.save()
+    # Save up the chain
+    new_controller.unscope_all()
+    controller.unscope_all()
+    return c

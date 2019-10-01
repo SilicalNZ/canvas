@@ -15,11 +15,6 @@ def _make_sorted(func):
 
 
 @_make_sorted
-def simple(rgb):
-    return rgb
-
-
-@_make_sorted
 def yiq(rgb):
     return _coloursys.rgb_to_yiq(*rgb)
 

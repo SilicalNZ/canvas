@@ -1,18 +1,11 @@
 import canvas
 
-from PIL import Image
-
 
 def open_and_save_image(func):
     def wrapper():
-        im = Image.open('test_image.png')
-        c = canvas.Canvas(im.getdata(), im.size)
-
+        c = canvas.Canvas.from_image('test_image.png', 'RGB')
         c = func(c)
-
-        im = Image.new('RGB', c.size)
-        im.putdata(c.getdata())
-        im.save('result_image.png')
+        c.save('result_image.png')
     return wrapper
 
 @open_and_save_image

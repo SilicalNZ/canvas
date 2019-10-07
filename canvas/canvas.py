@@ -291,7 +291,7 @@ class CanvasController(CanvasLayer):
             outside_range = True
         return outside_range
 
-    def _outside_range(self, bbox):
+    def _outside_range(self, bbox) -> Type[Canvas]:
         if not self.bbox_is_outside_range:
             return self.portion(bbox)
 
@@ -300,7 +300,7 @@ class CanvasController(CanvasLayer):
         x1, y1 = pos1
 
         size = x1 - x0 + 1, y1 - y0 + 1
-        canvas = Canvas.from_empty_size(size)
+        canvas = self.c.__class__.from_empty_size(size)
         self.canvases.append((canvas, bbox[0]))
 
         positions = []
@@ -315,12 +315,12 @@ class CanvasController(CanvasLayer):
 
         return canvas
 
-    def portion(self, bbox):
+    def portion(self, bbox) -> Type[Canvas]:
         if self.bbox_is_outside_range:
             return self._outside_range(bbox)
 
         gridded_data = shapes.quadrilateral.portion(self.c.as_grid(), *bbox)
-        canvas = Canvas(common.flatten(gridded_data), (bbox[1][0] - bbox[0][0], bbox[1][1] - bbox[0][1]))
+        canvas = self.c.__class__(common.flatten(gridded_data), (bbox[1][0] - bbox[0][0], bbox[1][1] - bbox[0][1]))
         self.canvases.append((canvas, bbox[0]))
         return canvas
 

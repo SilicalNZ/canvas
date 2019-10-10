@@ -10,8 +10,8 @@ class PILCanvas(Canvas):
     def from_image(cls, fp, mode):
         return cls.from_PIL(Image.open(fp).convert(mode))
 
-    def as_PIL(self):
-        im = Image.new('RGB', self.size, 'black')
+    def as_PIL(self, mode):
+        im = Image.new(mode, self.size, 'black')
         im.putdata(self.data)
         return im
 

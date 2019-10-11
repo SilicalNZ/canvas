@@ -15,5 +15,5 @@ class PILCanvas(Canvas):
         im.putdata(self.data)
         return im
 
-    def save(self, fp, format=None, **params):
-        self.as_PIL().save(fp, format=None, **params)
+    def save(self, fp, mode, format=None, **params):
+        self.as_PIL(mode).save(fp, format=None, **params)

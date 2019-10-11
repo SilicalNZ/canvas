@@ -381,7 +381,7 @@ class CanvasMerger:
         return axes[self.axis]
 
     def _active_alignment(self, segments):
-        alignments = {0: lambda segments: tuple([0] * len(x)),
+        alignments = {0: lambda segments: tuple([0] * len(segments)),
                       1: line_thingy.align_centre,
                       2: line_thingy.align_right}
 

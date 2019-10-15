@@ -281,9 +281,7 @@ class CanvasController(CanvasLayer):
         self.canvases = []
 
     def bbox_is_outside_range(self, bbox):
-        pos0, pos1 = bbox
-        x0, y0 = pos0
-        x1, y1 = pos1
+        x0, x1, y0, y1 = bbox
 
         outside_range = False
         if any(x < 0 or x > self.width for x in (x0, x1)) \
@@ -295,9 +293,7 @@ class CanvasController(CanvasLayer):
         if not self.bbox_is_outside_range:
             return self.portion(bbox)
 
-        pos0, pos1 = bbox
-        x0, y0 = pos0
-        x1, y1 = pos1
+        x0, x1, y0, y1 = bbox
 
         size = x1 - x0 + 1, y1 - y0 + 1
         canvas = self.c.__class__.from_empty_size(size)

@@ -334,7 +334,7 @@ class CanvasController(CanvasLayer):
             for x_pos in x_positions:
                 bbox0 = x_pos, y_pos
                 bbox1 = sili_math.get_opposite_corner(bbox0, size)
-                yield self.portion(*bbox0, *bbox1)
+                yield self.portion((*bbox0, *bbox1))
 
     def fragment(self, size, width_padding: int=0, length_padding: int=0):
         x_positions = [*line_thingy.padded_maximum(self.width, width_padding, size[0])]

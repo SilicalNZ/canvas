@@ -20,9 +20,7 @@ def cheap_round(x: float):
 
 
 def positions_within(bbox):
-    pos0, pos1 = bbox
-    x0, y0 = pos0
-    x1, y1 = pos1
+    x0, y0, x1, y1 = bbox
 
     for y in range(y0, y1 + 1, 1):
         for x in range(x0, x1 + 1, 1):

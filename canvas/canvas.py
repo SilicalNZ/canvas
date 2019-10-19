@@ -281,9 +281,7 @@ class CanvasController(CanvasLayer):
         self.canvases = []
 
     def bbox_is_outside_range(self, bbox):
-        pos0, pos1 = bbox
-        x0, y0 = pos0
-        x1, y1 = pos1
+        x0, x1, y0, y1 = bbox
 
         outside_range = False
         if any(x < 0 or x > self.width for x in (x0, x1)) \
@@ -295,13 +293,11 @@ class CanvasController(CanvasLayer):
         if not self.bbox_is_outside_range:
             return self.portion(bbox)
 
-        pos0, pos1 = bbox
-        x0, y0 = pos0
-        x1, y1 = pos1
+        x0, y0, x1, y1 = bbox
 
         size = x1 - x0 + 1, y1 - y0 + 1
         canvas = self.c.__class__.from_empty_size(size)
-        self.canvases.append((canvas, bbox[0]))
+        self.canvases.append((canvas, bbox[:2]))
 
         positions = []
         for pos in sili_math.positions_within(bbox):
@@ -320,8 +316,8 @@ class CanvasController(CanvasLayer):
             return self._outside_range(bbox)
 
         gridded_data = shapes.quadrilateral.portion(self.c.as_grid(), *bbox)
-        canvas = self.c.__class__(common.flatten(gridded_data), (bbox[1][0] - bbox[0][0], bbox[1][1] - bbox[0][1]))
-        self.canvases.append((canvas, bbox[0]))
+        canvas = self.c.__class__(common.flatten(gridded_data), (bbox[0] - bbox[1], bbox[2] - bbox[3]))
+        self.canvases.append((canvas, bbox[:2]))
         return canvas
 
     def unscope(self, idx):
@@ -338,7 +334,7 @@ class CanvasController(CanvasLayer):
             for x_pos in x_positions:
                 bbox0 = x_pos, y_pos
                 bbox1 = sili_math.get_opposite_corner(bbox0, size)
-                yield self.portion((bbox0, bbox1))
+                yield self.portion((*bbox0, *bbox1))
 
     def fragment(self, size, width_padding: int=0, length_padding: int=0):
         x_positions = [*line_thingy.padded_maximum(self.width, width_padding, size[0])]

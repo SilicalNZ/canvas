@@ -5,7 +5,7 @@ def open_and_save_image(func):
     def wrapper():
         c = canvas.Canvas.from_image('test_image.png', 'RGB')
         c = func(c)
-        c.save('result_image.png')
+        c.save('result_image.png', 'RGB')
     return wrapper
 
 @open_and_save_image
@@ -64,7 +64,7 @@ def rearrange_tessellation(c: canvas.Canvas):
 
     # Create an unaligned canvas, so that the next iteration
     # is halfway between the old iteration
-    portion = controller.portion(((-20, 0), controller.size))
+    portion = controller.portion((-20, 0, *controller.size))
     new_controller = canvas.CanvasController(portion)
 
     for i in new_controller.fragment(size):

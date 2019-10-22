@@ -55,6 +55,7 @@ def padded(spacing: int, segments):
         pos += line
         pos += spacing
 
+
 def padded_maximum(distance: int, spacing: int, line: int):
     incr = spacing + line
     pos = 0

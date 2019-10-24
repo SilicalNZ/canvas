@@ -93,6 +93,32 @@ def fill_in_line(distance: int, segments):
         yield i
 
 
+def find_fill_in(distance: int, lines: int):
+    """
+    :param distance: length of line to fill in
+    :param line: The amount of lines to contain within distance
+
+    distance = 20
+    line = 8
+    --------- --------- --
+
+    :return: The position of where each segment is located, the length of the segment
+    """
+    if distance - lines < 0:
+        raise RangeError
+
+    if lines == 1:
+        yield 0, distance
+        return
+
+    line_length, rm = divmod(distance, lines)
+    segments = [line_length for _ in range(lines)]
+    for x in range(rm):
+        segments[x] += 1
+
+    yield from zip(fill_in_line(distance, segments), segments)
+
+
 def fill_in_shortcut(distance: int, line: int, amount: int):
     segments = [line] * amount
     return fill_in_line(distance, segments)

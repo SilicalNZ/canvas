@@ -346,6 +346,15 @@ class CanvasController(CanvasLayer):
         y_positions = line_thingy.fill_in_shortcut(self.length, size[1], sizes_per_length)
         yield from self._portion_from_rangeable(size, x_positions, y_positions)
 
+    def crack(self, sizes_per_width: int=1, sizes_per_length: int=1):
+        x_positions = [*line_thingy.find_fill_in(self.width, sizes_per_width)]
+        y_positions = line_thingy.find_fill_in(self.length, sizes_per_length)
+        for y_pos, length in y_positions:
+            for x_pos, width in x_positions:
+                bbox0 = x_pos, y_pos
+                bbox1 = sili_math.get_opposite_corner(bbox0, (width, length))
+                yield self.portion((*bbox0, *bbox1))
+
 
 class CanvasMerger:
     def __init__(self, canvases):

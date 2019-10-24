@@ -1,4 +1,4 @@
-from .canvas import Canvas
+from .Canvas import Canvas
 from PIL import Image
 
 class PILCanvas(Canvas):

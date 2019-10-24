@@ -1,4 +1,4 @@
-from ..canvas import Canvas
+from ..Canvas import Canvas
 
 def rotate(canvas: Canvas, rotations: int=1):
     width = canvas.width

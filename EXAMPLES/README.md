@@ -11,3 +11,5 @@ However, feel free to treat any image as a list of lists ( [[0, 1, 2], [3, 4, 5]
 ![rearrange_shape](https://cdn.discordapp.com/attachments/301928716664176641/628700606206574642/rearrange_shape.png)
 
 ![rearrange_tessellation](https://cdn.discordapp.com/attachments/301928716664176641/628700609352040478/rearrange_tessellation.png)
+
+![operations_within_tessellation](https://cdn.discordapp.com/attachments/301928716664176641/636732608432308274/result_image.png)

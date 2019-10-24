@@ -79,6 +79,11 @@ def fill_in_line(distance: int, segments):
         raise RangeError
 
     spacing = distance - sum(segments)
+
+    if len(segments) == 1:
+        yield distance // 2
+        return
+
     padding = divmod(spacing, len(segments) - 1)
 
     halfway = distance / 2

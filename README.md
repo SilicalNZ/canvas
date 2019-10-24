@@ -11,6 +11,7 @@ Although there are quite a few image libraries, none of them handle image constr
 
 ## Caveat
 This library has no desire for speed.
+While this library is beneath ver 1.0+, breaking changes will not be documented and should be expected.
 
 ## Installing
 ```

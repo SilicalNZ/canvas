@@ -7,7 +7,7 @@ except ImportError:
 else:
     from .pillow_extension import PILCanvas as Canvas
 
-from .Layer import Layer
+from .Layer import Layer, Comparer
 from .Splitter import Splitter
 from .Merger import Merger
 from . import tools

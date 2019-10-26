@@ -53,3 +53,6 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
                 try: self[(x, y)] = width
                 except IndexError:
                     pass
+
+    def get_positions(self):
+        yield from [(x, y) for x in range(self.width) for y in range(self.length)]

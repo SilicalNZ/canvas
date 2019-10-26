@@ -41,3 +41,7 @@ def flap(arg, functions):
     for function in functions:
         arg = function(arg)
     return arg
+
+
+def intercept(intercept: float, iterable):
+    return iterable[int(intercept * (len(iterable) - 1))]

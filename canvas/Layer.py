@@ -1,7 +1,7 @@
 from . import Canvas
 from .common import *
 
-class ScopedCanvas(Canvas):
+class Comparer(Canvas):
     def __init__(self, canvas: Canvas or Type[Canvas]):
         self.c = canvas
         super().__init__(self.c.data, self.c.size)
@@ -10,7 +10,7 @@ class ScopedCanvas(Canvas):
         raise NotImplemented()
 
 
-class PositionalLayer(ScopedCanvas):
+class PositionalLayer(Comparer):
     def exclude(self, positions):
         for position in positions:
             if self.is_excluded(position):
@@ -62,7 +62,7 @@ class Layer(PositionalLayer):
     # _iterable_remove_nested just makes function writing a bit more versatile
 
     def _apply_to(self, functions, attribute):
-        grid = tuple(common.split_every(self.c.get_positions(), self.c.width))
+        grid = tuple(common.split_every(range(len(self.c)), self.c.width))
         getattr(super(), attribute)(common.flatten(common.flap(grid, functions)))
 
     def difference(self, *functions):

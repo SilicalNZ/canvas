@@ -14,9 +14,9 @@ class Tracker(Comparer):
         This only works when both states are unchanged with data and size.
             Order of data does not matter
         """
-        items = {i: [] for i in set(self.data)}
+        items = {i: [] for i in set(self)}
         [items[i].append(x) for x, i in zip(self.get_positions(), self)]
-        yield from [(x, items[i].pop(0)) if i is not None else None for x, i in zip(self.get_positions(), self.c)]
+        yield from [items[i].pop(0) if i is not None else None for i in self.c]
 
     def movement(self, function):
         yield from [function(*coords) for coords in self.how_did_it_transform()]

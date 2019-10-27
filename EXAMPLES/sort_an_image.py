@@ -116,4 +116,22 @@ def operations_within_tessellation(c: Canvas):
             length.unscope()
         rectangle.unscope_all()
     splitter.unscope_all()
-    return c
+
+@open_and_save_image
+def transition(c: Canvas):
+    tracker = Tracker(c)
+    tracker.rearrange(tools.yiq)
+
+
+    blank = Canvas.from_empty_size(tracker.size)
+
+
+    for n, i in enumerate(zip(tracker.c, tracker.movement(tools.TwoDimensional.linear))):
+        colour, move = i
+        if n < blank.length:
+            for x in move:
+                blank[x] = colour
+        else:
+            break
+
+    return blank

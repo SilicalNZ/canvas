@@ -18,10 +18,10 @@ class Tracker(Comparer):
         [items[i].append(x) for x, i in zip(self.get_positions(), self)]
         yield from [(x, items[i].pop(0)) if i is not None else None for x, i in zip(self.get_positions(), self.c)]
 
-    def data_movement(self, function):
+    def movement(self, function):
         yield from [function(*coords) for coords in self.how_did_it_transform()]
 
-    def data_transition(self, function):
+    def transition(self, function):
         yield from [function(*coords) for coords in zip(self, self.data) if all(i is not None for i in coords)]
 
 

@@ -127,7 +127,7 @@ def transition():
     trans = Transformer((tracker1, tracker0))
     trans.movement(1.0, tools.TwoDimensional.linear).save(f'result_image.png', 'RGB')
     for i in range(1, 10):
-        trans.movement(1 / i, tools.TwoDimensional.linear).save(f'{i}.png', 'RGB')
+        trans.movement(1 / i, tools.TwoDimensional.linear)
 
 @open_and_save_image
 def movement(c: Canvas):

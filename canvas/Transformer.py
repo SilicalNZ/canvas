@@ -16,13 +16,18 @@ class Tracker(Comparer):
         """
         items = {i: [] for i in set(self.c)}
         [items[i].append(x) for x, i in zip(self.get_positions(), self.c)]
-        yield from [items[i].pop(0) if i is not None else None for i in self]
+        sequence = [items[i].pop(0) if i is not None else None for i in self]
+        return Canvas(sequence, self.size)
 
     def movement(self, function):
-        yield from [function(*coords) if coords[0] is not None else None for coords in zip(self.get_positions(), self.how_did_it_transform())]
+        sequence = [function(*coords) if coords[0] is not None else None
+                    for coords in zip(self.get_positions(), self.how_did_it_transform())]
+        return Canvas(sequence, self.size)
 
     def transition(self, function):
-        yield from [function(*coords) if all(i is not None for i in coords) else None for coords in zip(self, self.data) ]
+        sequence = [function(*coords) if all(i is not None for i in coords) else None
+                    for coords in zip(self, self.data)]
+        return Canvas(sequence, self.size)
 
 
 class Transformer:

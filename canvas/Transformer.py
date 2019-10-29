@@ -42,5 +42,6 @@ class Transformer:
     def movement(self, intercept: float, function):
         template = Canvas.from_empty_size(self.canvas0.size)
         for colour, coord in zip(self.canvas0, self._binder(intercept, function, 'how_did_it_transform')):
-            template[coord] = colour
+            if coord is not None:
+                template[coord] = colour
         return template

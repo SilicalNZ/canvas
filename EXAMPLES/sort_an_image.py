@@ -117,8 +117,20 @@ def operations_within_tessellation(c: Canvas):
         rectangle.unscope_all()
     splitter.unscope_all()
 
+def transition():
+    tracker0 = Tracker(Canvas.from_image('test_image1.png', 'RGB'))
+    tracker0.rearrange(tools.yiq)
+
+    tracker1 = Tracker(Canvas.from_image('test_image2.png', 'RGB'))
+    tracker1.rearrange(tools.yiq)
+
+    trans = Transformer((tracker1, tracker0))
+    trans.movement(1.0, tools.TwoDimensional.linear).save(f'result_image.png', 'RGB')
+    for i in range(1, 10):
+        trans.movement(1 / i, tools.TwoDimensional.linear).save(f'{i}.png', 'RGB')
+
 @open_and_save_image
-def transition(c: Canvas):
+def movement(c: Canvas):
     tracker = Tracker(c)
     tracker.rearrange(tools.yiq)
 

@@ -35,8 +35,8 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
         return super().__getitem__(key)
 
     @classmethod
-    def from_empty_size(cls, size):
-        return cls([0] * sili_math.prod(size), size)
+    def from_empty_size(cls, size, default=0):
+        return cls([default] * sili_math.prod(size), size)
 
     @classmethod
     def from_canvas(cls, canvas):

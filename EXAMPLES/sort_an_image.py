@@ -3,7 +3,7 @@ from canvas import *
 
 def open_and_save_image(func):
     def wrapper():
-        c = Canvas.from_image('test_image.png', 'RGB')
+        c = Canvas.from_image('test_image2.png', 'RGB')
         c = func(c)
         c.save('result_image.png', 'RGB')
     return wrapper
@@ -117,33 +117,27 @@ def operations_within_tessellation(c: Canvas):
         rectangle.unscope_all()
     splitter.unscope_all()
 
-def transition():
-    tracker0 = Tracker(Canvas.from_image('test_image1.png', 'RGB'))
-    tracker0.rearrange(tools.yiq)
-
-    tracker1 = Tracker(Canvas.from_image('test_image2.png', 'RGB'))
-    tracker1.rearrange(tools.yiq)
-
-    trans = Transformer((tracker1, tracker0))
-    trans.movement(1.0, tools.TwoDimensional.linear).save(f'result_image.png', 'RGB')
-    for i in range(1, 10):
-        trans.movement(1 / i, tools.TwoDimensional.linear)
 
 @open_and_save_image
 def movement(c: Canvas):
     tracker = Tracker(c)
     tracker.rearrange(tools.yiq)
 
+    constructor = Constructor(tracker,
+                    Canvas.from_empty_size(tracker.size, (0, 0, 0)),
+                    tracker.movement(tools.TwoDimensional.linear))
 
-    blank = Canvas.from_empty_size(tracker.size)
+    sequence = []
+    for i in range(11):
+        x = constructor.intercept(i / 10 if i is not 0 else 0).as_PIL('RGB')
+        sequence.append(x)
 
+    duration = [250] + [3 for _ in range(len(sequence) - 2)] + [250]
 
-    for n, i in enumerate(zip(tracker.c, tracker.movement(tools.TwoDimensional.linear))):
-        colour, move = i
-        if n < blank.length:
-            for x in move:
-                blank[x] = colour
-        else:
-            break
-
-    return blank
+    sequence[0].save(f"result.gif",
+                     format="gif",
+                     save_all=True,
+                     append_images=sequence[1:],
+                     duration=duration,
+                     loop=0,
+                     disposal=1)

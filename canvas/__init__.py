@@ -10,5 +10,5 @@ else:
 from .Layer import Layer, Comparer
 from .Splitter import Splitter
 from .Merger import Merger
-from .Transformer import Tracker, Transformer
+from .Transformer import Tracker, Constructor
 from . import tools

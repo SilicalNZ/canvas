@@ -4,6 +4,8 @@ from . import Canvas
 from .common import *
 from .Layer import Comparer
 
+from .tools.geometry import TwoDimensional
+
 class Tracker(Comparer):
     def __init__(self, canvas: Type[Comparer]):
         super().__init__(canvas)
@@ -26,27 +28,35 @@ class Tracker(Comparer):
 
     def transition(self, function):
         sequence = [function(*coords) if all(i is not None for i in coords) else None
-                    for coords in zip(self, self.data)]
+                    for coords in zip(self.c, self)]
         return Canvas(sequence, self.size)
 
 
-class Transformer:
-    def __init__(self, canvases: Tuple[Type[Comparer], Type[Comparer]]):
-        self.canvas0, self.canvas1 = [Tracker(canvas) if not isinstance(canvas, Tracker) else canvas for canvas in canvases]
+class Constructor:
+    def __init__(self, canvas: Canvas, template: Canvas = None, pathways: Canvas = None, transforms: Canvas = None):
+        self.c = canvas
+        self.template = Canvas.from_canvas(self.c) if template is None else template
+        self.pathways = pathways
+        self.transforms = transforms
 
-    def _binder(self, intercept: float, function, attr):
-        if not hasattr(self, f'_cache_{attr}'):
-            data0 = getattr(self.canvas0, attr)()
-            data1 = getattr(self.canvas1, attr)()
+    def _gen_pathway(self, intercept: float):
+        if self.pathways is None:
+            yield from self.c.get_positions()
+        else:
+            yield from (common.intercept(intercept, pathway) for pathway in self.pathways)
 
-            binder = [[*function(*coords)] if all(i is not None for i in coords) else None for coords in zip(data0, data1)]
-            setattr(self, f'_cache_{attr}', binder)
+    def _gen_transform(self, intercept: float):
+        if self.transforms is None:
+            yield from self.c
+        else:
+            yield from (common.intercept(intercept, transform) for transform in self.transforms)
 
-        yield from [common.intercept(intercept, i) for i in getattr(self, f'_cache_{attr}')]
+    def intercept(self, intercept: float, overwrite_template = False) -> Canvas:
+        template = Canvas.from_canvas(self.template)
+        for x, transform in zip(self._gen_pathway(intercept), self._gen_transform(intercept)):
+            if None not in (x, transform):
+                template[x] = transform
 
-    def movement(self, intercept: float, function):
-        template = Canvas.from_empty_size(self.canvas0.size)
-        for colour, coord in zip(self.canvas0, self._binder(intercept, function, 'how_did_it_transform')):
-            if coord is not None:
-                template[coord] = colour
+        if overwrite_template:
+            self.template = template
         return template

@@ -3,6 +3,7 @@ from typing import Type, Tuple
 from . import Canvas
 from .common import *
 from .Layer import Comparer
+from .BaseClasses import CanvasNone
 
 from .tools.geometry import TwoDimensional
 
@@ -43,19 +44,47 @@ class Constructor:
         if self.pathways is None:
             yield from self.c.get_positions()
         else:
-            yield from (common.intercept(intercept, pathway) for pathway in self.pathways)
+            yield from (common.intercept(intercept, pathway) if pathway is not None else None
+                        for pathway in self.pathways)
 
     def _gen_transform(self, intercept: float):
         if self.transforms is None:
             yield from self.c
         else:
-            yield from (common.intercept(intercept, transform) for transform in self.transforms)
+            yield from (common.intercept(intercept, transform) if transform is not None else None
+                        for transform in self.transforms)
 
     def intercept(self, intercept: float, overwrite_template = False) -> Canvas:
         template = Canvas.from_canvas(self.template)
         for x, transform in zip(self._gen_pathway(intercept), self._gen_transform(intercept)):
             if None not in (x, transform):
                 template[x] = transform
+
+        if overwrite_template:
+            self.template = template
+        return template
+
+    def voronoi(self, intercept: float, nearest_neighbour_function = TwoDimensional.circle_from_point, overwrite_template = False) -> Canvas:
+        canvas = self.intercept(intercept)
+        template = Canvas.from_canvas(self.template)
+
+        def closest_data(coord, canvas: Canvas):
+            # TODO: Don't run this eternally
+            r = 0
+            while True:
+                r += 1
+                for i in nearest_neighbour_function(coord, r):
+                    try:
+                        if canvas[i] is not CanvasNone:
+                            return canvas[i]
+                    except IndexError:
+                        pass
+
+        for x, data in zip(canvas.get_positions(), canvas):
+            if data is CanvasNone:
+                template[x] = closest_data(x, canvas)
+            else:
+                template[x] = data
 
         if overwrite_template:
             self.template = template

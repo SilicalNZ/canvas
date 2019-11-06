@@ -3,7 +3,7 @@ from canvas import *
 
 def open_and_save_image(func):
     def wrapper():
-        c = Canvas.from_image('test_image2.png', 'RGB')
+        c = Canvas.from_image('plant.png', 'RGB')
         c = func(c)
         c.save('result_image.png', 'RGB')
     return wrapper
@@ -123,18 +123,29 @@ def movement(c: Canvas):
     tracker = Tracker(c)
     tracker.rearrange(tools.yiq)
 
+    tracker_subset = tracker.movement(tools.TwoDimensional.linear)
+
+    ignore = [*tracker_subset.get_positions()][::64]
+
+    for coord in tracker_subset.get_positions():
+        if coord not in ignore:
+            tracker_subset[coord] = None
+
+
+
     constructor = Constructor(tracker,
-                    Canvas.from_empty_size(tracker.size, (0, 0, 0)),
-                    tracker.movement(tools.TwoDimensional.linear))
+                    Canvas.from_empty_size(tracker.size, CanvasNone),
+                    tracker_subset,
+                    tracker.transition(tools.ThreeDimensional.linear))
 
     sequence = []
     for i in range(11):
-        x = constructor.intercept(i / 10 if i is not 0 else 0).as_PIL('RGB')
+        x = constructor.voronoi(i / 10 if i is not 0 else 0).as_PIL('RGB')
         sequence.append(x)
 
     duration = [250] + [3 for _ in range(len(sequence) - 2)] + [250]
 
-    sequence[0].save(f"result.gif",
+    sequence[0].save(f"result1.gif",
                      format="gif",
                      save_all=True,
                      append_images=sequence[1:],

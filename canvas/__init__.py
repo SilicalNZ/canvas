@@ -12,3 +12,4 @@ from .Splitter import Splitter
 from .Merger import Merger
 from .Transformer import Tracker, Constructor
 from . import tools
+from .BaseClasses import CanvasNone

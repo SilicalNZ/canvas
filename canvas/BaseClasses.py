@@ -108,3 +108,8 @@ class NoneIsImmutableTuple(NoneIsImportantTuple):
     def __setitem__(self, key, value):
         if self.data[key] is not None:
             self.data[key] = value
+
+class CanvasNone:
+    """A class that has no effect, but is able to be overwritten, unlike None"""
+    def __repr__(self):
+        return CanvasNone

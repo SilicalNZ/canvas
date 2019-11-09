@@ -1,12 +1,17 @@
 from canvas import *
 
 
-def open_and_save_image(func):
-    def wrapper():
-        c = Canvas.from_image('plant.png', 'RGB')
-        c = func(c)
-        c.save('result_image.png', 'RGB')
-    return wrapper
+def open_and_save_image(func_or_images):
+    if callable(func_or_images):
+        return open_and_save_image(('test_image.png'))(func_or_images)
+    def caller(func):
+        def wrapper():
+            c = tuple(Canvas.from_image(image, 'RGB') for image in func_or_images)
+            c = func(*c)
+            c.save('result_image.png', 'RGB')
+        return wrapper
+    return caller
+
 
 @open_and_save_image
 def rearrange(c: Canvas):
@@ -118,29 +123,33 @@ def operations_within_tessellation(c: Canvas):
     splitter.unscope_all()
 
 
-@open_and_save_image
-def movement(c: Canvas):
-    tracker = Tracker(c)
-    tracker.rearrange(tools.yiq)
+@open_and_save_image(('plant.png', 'test_image2.png'))
+def movement(*canvases):
+    tracker0 = Tracker(canvases[0])
+    tracker0.rearrange(tools.yiq)
+
+    tracker1 = Tracker(canvases[1])
+    tracker1.rearrange(tools.yiq)
+
+
+    tracker = Binder(tracker0, tracker1)
 
     tracker_subset = tracker.movement(tools.TwoDimensional.linear)
 
-    ignore = [*tracker_subset.get_positions()][::64]
+    ignore = [*tracker.get_positions()][::64]
 
     for coord in tracker_subset.get_positions():
         if coord not in ignore:
             tracker_subset[coord] = None
 
 
-
     constructor = Constructor(tracker,
                     Canvas.from_empty_size(tracker.size, CanvasNone),
-                    tracker_subset,
-                    tracker.transition(tools.ThreeDimensional.linear))
+                    tracker_subset)
 
     sequence = []
     for i in range(11):
-        x = constructor.voronoi(i / 10 if i is not 0 else 0).as_PIL('RGB')
+        x = constructor.voronoi(i / 11 if i is not 0 else 0)
         sequence.append(x)
 
     duration = [250] + [3 for _ in range(len(sequence) - 2)] + [250]

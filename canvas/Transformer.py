@@ -41,6 +41,7 @@ class Constructor:
         self.transforms = transforms
 
     def _gen_pathway(self, intercept: float):
+        print(intercept)
         if self.pathways is None:
             yield from self.c.get_positions()
         else:
@@ -81,6 +82,8 @@ class Constructor:
                         pass
 
         for x, data in zip(canvas.get_positions(), canvas):
+            if None in (x, data):
+                conitnue
             if data is CanvasNone:
                 template[x] = closest_data(x, canvas)
             else:
@@ -89,3 +92,19 @@ class Constructor:
         if overwrite_template:
             self.template = template
         return template
+
+
+class Binder(Canvas):
+    def __init__(self, tracker0: Canvas or Type[Canvas], tracker1: Canvas or Type[Canvas]):
+        super().__init__(tracker0, tracker0.size)
+        self.canvases = [Tracker(canvas) if not isinstance(canvas, Tracker) else canvas for canvas in (tracker0, tracker1)]
+
+    def movement(self, function):
+        sequence = (function(*coords) for coords in
+                             zip(self.canvases[0].how_did_it_transform(), self.canvases[1].how_did_it_transform()))
+        return Canvas(sequence, self.size)
+
+    def transition(self, function):
+        sequence = (function(*coords) for coords in
+                             zip(self.canvases[0].data, self.canvases[1].data))
+        return Canvas(sequence, self.size)

@@ -123,41 +123,22 @@ def operations_within_tessellation(c: Canvas):
     splitter.unscope_all()
 
 
-@open_and_save_image(('plant.png', 'test_image2.png'))
+@open_and_save_image(('sili.png', 'test_image2.png'))
 def movement(*canvases):
+    #Two trackers that keep an eye on the rearrange
     tracker0 = Tracker(canvases[0])
     tracker0.rearrange(tools.yiq)
 
     tracker1 = Tracker(canvases[1])
     tracker1.rearrange(tools.yiq)
 
-
+    # Binds the trackers together, same methods as Tracker
     tracker = Binder(tracker0, tracker1)
 
-    tracker_subset = tracker.movement(tools.TwoDimensional.linear)
-
-    ignore = [*tracker.get_positions()][::64]
-
-    for coord in tracker_subset.get_positions():
-        if coord not in ignore:
-            tracker_subset[coord] = None
-
-
+    # The args used are canvases of transformation
+    # eg: (0, 0) -> (3, 3), ... = [(0, 0), (1, 1), (2, 2), (3, 3)], ...
     constructor = Constructor(tracker,
-                    Canvas.from_empty_size(tracker.size, CanvasNone),
-                    tracker_subset)
-
-    sequence = []
-    for i in range(11):
-        x = constructor.voronoi(i / 11 if i is not 0 else 0)
-        sequence.append(x)
-
-    duration = [250] + [3 for _ in range(len(sequence) - 2)] + [250]
-
-    sequence[0].save(f"result1.gif",
-                     format="gif",
-                     save_all=True,
-                     append_images=sequence[1:],
-                     duration=duration,
-                     loop=0,
-                     disposal=1)
+                              Canvas.from_empty_size(tracker.size, CanvasNone),
+                              tracker.movement(tools.TwoDimensional.linear),
+                              tracker.transition(tools.ThreeDimensional.linear))
+    return constructor.movement(0.5)

@@ -83,6 +83,9 @@ class NoneIsImportantTuple(IndexableTuple):
     def is_excluded(self, key):
         return bool(self[key])
 
+    def data_and_positions(self):
+        yield from ((data, x) for data, x in zip(self.data, self.get_positions()) if data is not None)
+
     def getdata(self):
         return [i for i in self.data if i is not None]
 

@@ -54,5 +54,8 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
                 except IndexError:
                     pass
 
+    def data_and_positions(self):
+        yield from ((data, x) for data, x in zip(self.data, self.get_positions()) if data is not None)
+
     def get_positions(self):
-        yield from [(x, y) for y in range(self.length) for x in range(self.width) ]
+        yield from [(x, y) for y in range(self.length) for x in range(self.width)]

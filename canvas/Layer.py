@@ -87,3 +87,8 @@ class Layer(PositionalLayer):
         self.intersection(shape_func)
         self.rearrange(rearrange_func)
         self.remove_excluded()
+
+    def condition(self, function):
+        """Iterates through data and excludes if check is matched"""
+        [self.exclude(x) for i, x in self.getdata() if function(i)]
+

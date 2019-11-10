@@ -41,7 +41,6 @@ class Constructor:
         self.transforms = transforms
 
     def _gen_pathway(self, intercept: float):
-        print(intercept)
         if self.pathways is None:
             yield from self.c.get_positions()
         else:

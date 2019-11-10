@@ -3,7 +3,7 @@ from canvas import *
 
 def open_and_save_image(func_or_images):
     if callable(func_or_images):
-        return open_and_save_image(('test_image.png'))(func_or_images)
+        return open_and_save_image(('test_image.png', ))(func_or_images)
     def caller(func):
         def wrapper():
             c = tuple(Canvas.from_image(image, 'RGB') for image in func_or_images)

@@ -1,5 +1,4 @@
 import colorsys as _coloursys
-from scipy.fftpack import hilbert as _hilbert
 from functools import wraps, partial
 import math
 import random
@@ -50,11 +49,6 @@ def gradient_step_sort(rgb, repetitions=8):
         v2 = repetitions - v2
         lum = repetitions - lum
     return h2, lum, v2
-
-
-@_make_sorted
-def hilbert(rgb):
-    return tuple(_hilbert(rgb))
 
 
 @_make_sorted

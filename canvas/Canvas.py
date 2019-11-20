@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from functools import wraps
 
 from .BaseClasses import NoneIsImportantTuple, SizeInfo
@@ -45,7 +43,7 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
     def as_grid(self):
         return tuple(common.split_every(self.data, self.width))
 
-    def insert(self, canvas: Canvas, corner):
+    def insert(self, canvas, corner):
         for y, length in enumerate(canvas.as_grid(), corner[1]):
             for x, width in enumerate(length, corner[0]):
                 if width is None:

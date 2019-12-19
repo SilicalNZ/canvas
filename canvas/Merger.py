@@ -1,4 +1,7 @@
+from itertools import permutations
+
 from . import Canvas, Splitter
+from .BaseClasses import CanvasNone
 from .common import *
 
 class Merger:
@@ -57,3 +60,24 @@ class Merger:
         splitter = Splitter(c)
         [splitter.canvases.append((canvas, corner)) for canvas, corner in zip(self.canvases, bbox0)]
         return splitter
+
+    def fill_in_canvas(self, canvas):
+        if sum(map(sili_math.prod, self.sizes)) != sili_math.prod(canvas.size):
+            raise IndexError('canvases cannot fit in canvas')
+
+        _canvas = Canvas.from_empty_size(canvas.size, CanvasNone)
+
+        def get_empty_spot(c: Canvas):
+            for data, pos in c.data_and_positions():
+                if data is CanvasNone:
+                    return pos
+
+        for i in permutations(self.canvases):
+            temp = Canvas.from_canvas(_canvas)
+            try:
+                [temp.insert(j, get_empty_spot(temp), raise_error=True) for j in i]
+            except IndexError:
+                pass
+            else:
+                if CanvasNone not in temp:
+                    yield temp

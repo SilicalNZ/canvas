@@ -43,14 +43,19 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
     def as_grid(self):
         return tuple(common.split_every(self.data, self.width))
 
-    def insert(self, canvas, corner):
+    def insert(self, canvas, corner, raise_error=False):
+        if raise_error:
+            _c = Canvas.from_canvas(self)
+
         for y, length in enumerate(canvas.as_grid(), corner[1]):
             for x, width in enumerate(length, corner[0]):
                 if width is None:
                     pass
                 try: self[(x, y)] = width
                 except IndexError:
-                    pass
+                    if raise_error:
+                        self.data = _c.data
+                        raise IndexError('new canvas does not fit into this canvas')
 
     def data_and_positions(self):
         yield from ((data, x) for data, x in zip(self.data, self.get_positions()) if data is not None)

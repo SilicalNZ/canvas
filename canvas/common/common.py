@@ -45,3 +45,12 @@ def flap(arg, functions):
 
 def intercept(intercept: float, iterable):
     return iterable[int(intercept * (len(iterable) - 1))]
+
+def unique_permutations(iterable):
+    results = []
+    for r in range(len(iterable)):
+        for permutation in itertools.permutations(iterable, r):
+            permutation = sorted(permutation)
+            if permutation not in results:
+                yield permutation
+                results.append(permutation)

@@ -43,7 +43,7 @@ class Merger:
     def _realign(self):
         return self.alignments(self.axes[self.axis])
 
-    def fill_in(self, distance: int):
+    def fill_in_lateral(self, distance: int):
         bbox0 = [list(i) for i in self.sizes]
         pos0 = line_thingy.fill_in_line(distance, self._active_axis())
         pos1 = self._active_alignment(self._active_axis(invert=True))
@@ -81,3 +81,13 @@ class Merger:
             else:
                 if CanvasNone not in temp:
                     yield temp
+
+    def find_fill_in(self):
+        for length in common.unique_permutations(self.lengths):
+            length = sum(length)
+            for width in common.unique_permutations(self.widths):
+                width = sum(width)
+                try:
+                    yield from self.fill_in_canvas(Canvas.from_empty_size((width, length), default=CanvasNone))
+                except IndexError:
+                    pass

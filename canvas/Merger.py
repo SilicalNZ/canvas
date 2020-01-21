@@ -43,7 +43,10 @@ class Merger:
     def _realign(self):
         return self.alignments(self.axes[self.axis])
 
-    def fill_in_lateral(self, distance: int):
+    def fill_in_lateral(self, distance: int = None, additive: int = 0):
+        distance = distance if distance else sum(self._active_axis())
+        distance += additive
+
         bbox0 = [list(i) for i in self.sizes]
         pos0 = line_thingy.fill_in_line(distance, self._active_axis())
         pos1 = self._active_alignment(self._active_axis(invert=True))

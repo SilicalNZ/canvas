@@ -124,7 +124,7 @@ def operations_within_tessellation(c: Canvas):
 
 
 @open_and_save_image(('sili.png', 'test_image2.png'))
-def movement(*canvases):
+def intercept(*canvases):
     #Two trackers that keep an eye on the rearrange
     tracker0 = Tracker(canvases[0])
     tracker0.rearrange(tools.yiq)
@@ -141,4 +141,15 @@ def movement(*canvases):
                               Canvas.from_empty_size(tracker.size, CanvasNone),
                               tracker.movement(tools.TwoDimensional.linear),
                               tracker.transition(tools.ThreeDimensional.linear))
-    return constructor.movement(0.5)
+
+    s_template = Canvas([
+        1,0,0,0,1,
+        1,0,1,1,1,
+        1,0,0,0,1,
+        1,1,1,0,1,
+        1,0,0,0,1,
+    ], (5, 5))
+    s_template.replace(1, None)
+    s_template.replace(0, CanvasNone)
+
+    return constructor.intercept(0.5, s_template)

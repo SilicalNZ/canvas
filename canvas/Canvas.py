@@ -65,3 +65,15 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
 
     def copy(self):
         return self[:]
+
+    def sweep(self, n, default=None):
+        """
+        Replace every cell with default, skip every nth number
+        :param n: every nth cell
+        :return: self
+        """
+        return self.__class__([None if x % n != 0 else i for x, i in enumerate(self)], self.size)
+
+    def replace(self, previous, new):
+        [self.__setitem__(x, new) for x, i in enumerate(self) if i == previous]
+        return self

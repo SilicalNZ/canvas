@@ -1,5 +1,9 @@
 from collections import abc
 from typing import Type
+from copy import copy
+
+
+_empty_slice = slice(None, None, None)
 
 
 class SizeInfo:
@@ -39,6 +43,10 @@ class IndexableTuple(abc.Sequence):
         self.data.reverse()
 
     def __getitem__(self, item):
+        if item == _empty_slice:
+            _copy = copy(self)
+            _copy.data = self.data[:]
+            return _copy
         return self.data[item]
 
     def __setitem__(self, key, value):

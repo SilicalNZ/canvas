@@ -62,3 +62,6 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
 
     def get_positions(self):
         yield from [(x, y) for y in range(self.length) for x in range(self.width)]
+
+    def copy(self):
+        return self[:]

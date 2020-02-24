@@ -54,11 +54,15 @@ class Constructor:
             yield from (common.intercept(intercept, transform) if transform is not None else None
                         for transform in self.transforms)
 
-    def intercept(self, intercept: float, overwrite_template = False) -> Canvas:
+    def intercept(self, intercept: float, overwrite_template = False, insert_canvas: Canvas = None) -> Canvas:
         template = Canvas.from_canvas(self.template)
         for x, transform in zip(self._gen_pathway(intercept), self._gen_transform(intercept)):
             if None not in (x, transform):
-                template[x] = transform
+                if insert_canvas:
+                    transform = insert_canvas.copy().replace(CanvasNone, transform)
+                    template.insert(transform, x)
+                else:
+                    template[x] = transform
 
         if overwrite_template:
             self.template = template

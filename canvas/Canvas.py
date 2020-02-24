@@ -50,7 +50,7 @@ class Canvas(NoneIsImportantTuple, SizeInfo):
         for y, length in enumerate(canvas.as_grid(), corner[1]):
             for x, width in enumerate(length, corner[0]):
                 if width is None:
-                    pass
+                    continue
                 try: self[(x, y)] = width
                 except IndexError:
                     if raise_error:

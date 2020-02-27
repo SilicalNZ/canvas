@@ -86,7 +86,7 @@ class Constructor:
 
         for x, data in zip(canvas.get_positions(), canvas):
             if None in (x, data):
-                conitnue
+                continue
             if data is CanvasNone:
                 template[x] = closest_data(x, canvas)
             else:

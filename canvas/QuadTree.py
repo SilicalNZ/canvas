@@ -7,7 +7,6 @@ from collections import Counter
 import random
 
 from canvas import *
-from EXAMPLES.sort_an_image import open_and_save_image
 
 
 def dist(a, b):

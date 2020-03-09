@@ -13,3 +13,4 @@ from .Merger import Merger
 from .Transformer import Tracker, Constructor, Binder
 from . import tools
 from .BaseClasses import CanvasNone
+from .QuadTree import Seedling as _QuadTree
